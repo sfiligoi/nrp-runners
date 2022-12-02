@@ -12,4 +12,5 @@ RUN mkdir /opt/actions-runner && cd /opt/actions-runner && \
 RUN cd /opt/actions-runner && \
     DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC ./bin/installdependencies.sh
     
+RUN useradd -m -s /bin/bash builder
 
