@@ -9,7 +9,7 @@ RUN mkdir /opt/downloads && cd /opt/downloads && \
 RUN mkdir /opt/actions-runner && cd /opt/actions-runner && \
     tar -xzf /opt/downloads/actions-runner-linux.tar.gz
 
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC cd /opt/actions-runner && \
-    ./bin/installdependencies.sh
+RUN cd /opt/actions-runner && \
+    DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC ./bin/installdependencies.sh
     
 
