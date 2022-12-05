@@ -29,6 +29,10 @@ tar -xzf /opt/downloads/actions-runner-linux.tar.gz
 
 kubectl delete -n <namespace> -f setup_pod.yaml
 
-3) Launch the runner manager
+3) Launch the runner deployment, without any running pods as the default
+
+kubectl create -n <namespace> -f <repo>/runner_deployment.yaml
+
+4) Launch the runner manager
 TBD
 
