@@ -14,3 +14,5 @@ RUN cd /opt/actions-runner && \
     
 RUN useradd -m -s /bin/bash builder
 
+ADD support/run_runner.sh /opt/run_runner.sh
+
