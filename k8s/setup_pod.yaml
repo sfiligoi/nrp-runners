@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: setup-interactive
+spec:
+      affinity:
+       nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+           matchExpressions:
+           - key: topology.kubernetes.io/region
+             operator: In
+             values:
+             - us-central
+      containers:
+      - name: mypod
+        image: sfiligoi/nrp-runners:wn-gpu
+        imagePullPolicy: Always
+        resources:
+           limits:
+             memory: 6Gi
+             cpu: 2
+             ephemeral-storage: 11Gi
+           requests:
+             memory: 1Gi
+             cpu: 0.1
+             ephemeral-storage: 8Gi
+        command: ["sh", "-c", "mkdir /mnt/scratch/builder; chown -R builder /mnt/scratch/builder; sleep 10000"]
+        volumeMounts:
+        - name: scratch1
+          mountPath: /mnt/scratch
+        - name: mypvc
+          mountPath: /mnt/persistent
+      volumes:
+      - name: scratch1
+        emptyDir: {}
+      - name: mypvc
+        persistentVolumeClaim:
+          claimName: runner-state
