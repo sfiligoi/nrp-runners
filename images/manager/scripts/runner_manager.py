@@ -88,16 +88,18 @@ def checkandsetrunners(nmspace, who, repo, token):
          print("%s Stopping runner %s"%(time.ctime(), repo))
          setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 0)
 
-def main(nmspace, who, repo, token, stime):
+def main(nmspace, who, repo, stime):
     kubernetes.config.load_incluster_config()
-    print("%s Manager args %s,%s,%s,###,%s"%(time.ctime(), nmspace, who, repo, stime))
+    with open("/etc/github_token.txt","r") as fd:
+        token=fd.readlines()[0].strip()
+
+    print("%s Manager args %s,%s,%s,%s"%(time.ctime(), nmspace, who, repo, stime))
     while True: #run forever
       checkandsetrunners(nmspace, who, repo, token)
       time.sleep(stime)
 
-
 if __name__ == '__main__':
-   main(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],int(sys.argv[5]))
+   main(sys.argv[1],sys.argv[2],sys.argv[3],int(sys.argv[4]))
 
 
 
