@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner-manager-<repo>
+  labels:
+    k8s-app: runner-manager
+    runner-manager-repo: <repo>
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: runner-manager-<repo>
+  template:
+    metadata: 
+      labels:
+        k8s-app: runner-manager-<repo>
+    spec:
+      serviceAccountName: nrp-runner-manager
+      restartPolicy: Always
+      containers:
+      - name: manager
+        image: sfiligoi/nrp-runners:manager
+        imagePullPolicy: Always
+        resources:
+           limits:
+             memory: 1Gi
+             cpu: 1
+           requests:
+             memory: 100Mi
+             cpu: 0.1
+        command: ["/opt/runner_manager.py"]
+        args: ["<namespace>","<project>/<repo>","<repo>","30"]
+        volumeMounts:
+        - name: token
+          mountPath: /etc/github_token.txt
+          subPath: github_token.txt
+      volumes:
+      - name: token
+        secret:
+          secretName: nrp-runner-token
+          defaultMode: 384
+          items:
+          - key: github_token.txt
+            path: github_token.txt
+
