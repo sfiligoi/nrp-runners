@@ -7,16 +7,19 @@ from io import BytesIO
 import json
 import kubernetes
 
-def getqueuedruns(who):
+def getruns(who,state,token):
     try:
         c = pycurl.Curl()
-        c.setopt(c.URL, 'https://api.github.com/repos/%s/actions/runs?status=queued'%who)
+        c.setopt(c.URL, 'https://api.github.com/repos/%s/actions/runs?status=%s'%(who,state))
+        if token is not None:
+            headers=("Accept: application/vnd.github+json","Authorization: Bearer %s"%token)
+            c.setopt(pycurl.HTTPHEADER, headers)
         buffer = BytesIO()
         c.setopt(c.WRITEDATA, buffer)
         c.perform()
         c.close()
     except:
-        # could not talk to the server
+        print("Failed to contact github")
         return None
 
     try:
@@ -29,34 +32,18 @@ def getqueuedruns(who):
 
     return cnt
 
-def getactiveruns(who):
-    try:
-        c = pycurl.Curl()
-        c.setopt(c.URL, 'https://api.github.com/repos/%s/actions/runs?status=in_progress'%who)
-        buffer = BytesIO()
-        c.setopt(c.WRITEDATA, buffer)
-        c.perform()
-        c.close()
-    except:
-        # could not talk to the server
-        return None
+def getqueuedruns(who,token):
+    return getruns(who,"queued",token)
 
-    try:
-        body = buffer.getvalue().decode('ascii')
-        doc=json.loads(body)
-        cnt=doc['total_count']
-    except:
-        print("Parsing error!")
-        return None
-
-    return cnt
+def getactiveruns(who,token):
+    return getruns(who,"in_progress",token)
 
 def getrunners(nmspace,repo):
     try:
         k8s = kubernetes.client.AppsV1Api()
         dlist = k8s.list_namespaced_deployment(namespace=nmspace,label_selector="runner-repo=%s"%repo)
     except:
-        #falied to talk to k8s
+        print("Failed to contact k8s")
         return None
 
     try:
@@ -79,8 +66,8 @@ def setrunners(nmspace, nm, cnt):
         print("Deployment update failed")
 
 # keep one runner alive only if there are any waiting runs
-def checkandsetrunners(nmspace, who, repo):
-    run_cnt = getqueuedruns(who)
+def checkandsetrunners(nmspace, who, repo, token):
+    run_cnt = getqueuedruns(who,token)
     if run_cnt is None:
        return
     runner_cnt_arr = getrunners(nmspace,repo)
@@ -94,23 +81,23 @@ def checkandsetrunners(nmspace, who, repo):
          print("%s Starting runner %s"%(time.ctime(), repo))
          setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 1)
     else:
-       run_cnt2 = getactiveruns(who)
+       run_cnt2 = getactiveruns(who,token)
        if run_cnt2 is None:
           return
        if (run_cnt+run_cnt2)<1:
          print("%s Stopping runner %s"%(time.ctime(), repo))
          setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 0)
 
-def main(nmspace, who, repo, stime):
+def main(nmspace, who, repo, token, stime):
     kubernetes.config.load_incluster_config()
-    print("%s Manager args %s,%s,%s,%s"%(time.ctime(), nmspace, who, repo, stime))
+    print("%s Manager args %s,%s,%s,###,%s"%(time.ctime(), nmspace, who, repo, stime))
     while True: #run forever
-      checkandsetrunners(nmspace, who, repo)
+      checkandsetrunners(nmspace, who, repo, token)
       time.sleep(stime)
 
 
 if __name__ == '__main__':
-   main(sys.argv[1],sys.argv[2],sys.argv[3],int(sys.argv[4]))
+   main(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],int(sys.argv[5]))
 
 
 
