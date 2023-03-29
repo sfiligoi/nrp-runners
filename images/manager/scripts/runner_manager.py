@@ -7,6 +7,10 @@ from io import BytesIO
 import json
 import kubernetes
 
+# will base policy on my start time
+# that will randomize a bit the distributon if we have multiple processes
+my_start_time=time.time()
+
 def getruns(who,state,token):
     try:
         c = pycurl.Curl()
@@ -66,15 +70,32 @@ def setrunners(nmspace, nm, cnt):
         print("Deployment update failed")
 
 # keep one runner alive only if there are any waiting runs
-def checkandsetrunners(nmspace, who, repo, token):
-    run_cnt = getqueuedruns(who,token)
-    if run_cnt is None:
-       return
+# except for periodic intervals needed to keep the token alive
+#  awake_period is the frequency with a default of 3 days (tokens are valid of a week)
+#  awak_length is the time to stay awak, default just over 33 mins to allow for binary updates
+def checkandsetrunners(nmspace, who, repo, token, awake_period=250000, awake_length=2000):
+    # find how many runners we already have
     runner_cnt_arr = getrunners(nmspace,repo)
-    if runner_cnt_arr is None:
+    if runner_cnt_arr is None:  # Error detected, just bail
        return
 
     runner_cnt = runner_cnt_arr[2]
+
+    alive_secs=int(time.time()-my_start_time)
+    awake_point = alive_secs%awake_period
+
+    if (awake_pont<awake_length) and (runner_cnt==0):
+       # force one alive runniner during the awake period
+       print("%s Starting periodic runner %s"%(time.ctime(), repo))
+       setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 1)
+       return
+
+    # else, use the normal logic
+
+    # find how many jobs are in neeed of a runner
+    run_cnt = getqueuedruns(who,token)
+    if run_cnt is None: # Error detected, just bail
+       return
 
     if runner_cnt==0:
        if run_cnt>0:
