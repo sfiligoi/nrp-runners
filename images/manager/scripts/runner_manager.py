@@ -84,10 +84,12 @@ def checkandsetrunners(nmspace, who, repo, token, awake_period=250000, awake_len
     alive_secs=int(time.time()-my_start_time)
     awake_point = alive_secs%awake_period
 
-    if (awake_point<awake_length) and (runner_cnt==0):
-       # force one alive runniner during the awake period
-       print("%s Starting periodic runner %s"%(time.ctime(), repo))
-       setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 1)
+    if awake_point<awake_length:
+       if runner_cnt==0:
+          # force one alive runniner during the awake period
+          print("%s Starting periodic runner %s"%(time.ctime(), repo))
+          setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 1)
+       # else just make sure it stays that way
        return
 
     # else, use the normal logic
