@@ -21,5 +21,5 @@ ADD support/init_runner_builder.sh /opt/init_runner_builder.sh
 # main run script
 ADD support/run_runner.sh /opt/run_runner.sh
 
-RUN chmod a+x /opt/init_runner.sh && chmod a+x /opt/init_runner_builder.sh && chmod a+x /opt/run_runner.sh &&
+RUN chmod a+x /opt/init_runner.sh && chmod a+x /opt/init_runner_builder.sh && chmod a+x /opt/run_runner.sh
 
