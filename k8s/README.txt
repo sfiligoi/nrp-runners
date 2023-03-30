@@ -27,19 +27,8 @@ Get one-time token from github
 https://github.com/<project>/<repo>/settings/actions/runners
 
 kubectl create -n <namespace> -f setup_pod.yaml 
-kubectl exec -n <namespace> -it setup-interactive -- /bin/bash
-# as root inside the pod
-mkdir /mnt/persistent/builder
-chown builder /mnt/persistent/builder
-su - builder
-# you are now the builder user, never use root again
-cd /mnt/persistent/builder
-mkdir <repo>
-cd <repo> 
-tar -xzf /opt/downloads/actions-runner-linux.tar.gz 
-./config.sh --url https://github.com/<project>/<repo> --token <token> --labels linux-gpu-cuda --name nrp-linux-gpu-cuda --work /mnt/scratch/builder 
-# exit the pod
-
+# wait for the pod to start
+kubectl exec -n <namespace> -it setup-interactive -- /opt/init_runner.sh <project> <repo> <token> linux-gpu-cuda nrp-linux-gpu-cuda
 kubectl delete -n <namespace> -f setup_pod.yaml
 
 5) Launch the runner deployment, without any running pods as the default
