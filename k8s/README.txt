@@ -13,6 +13,9 @@ and save the content in github_token.txt.
 Then create the necessary k8s secret:
 kubectl create secret generic -n biocore-build nrp-runner-token --from-file=github_token.txt
 
+Note: If the token needs to be updated, use:
+kubectl create secret generic -n biocore-build nrp-runner-token --from-file=github_token.txt --save-config --dry-run=client -o yaml | kubectl apply -f -
+
 3) Create PVC
 Note: You can share the PVC among many github repositories,
       if they share the nsame NRP namespace:
