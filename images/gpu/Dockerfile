@@ -1,6 +1,6 @@
-FROM nvidia/cuda:11.7.1-devel-ubuntu20.04
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
 
-RUN apt-get update && apt-get install --yes curl
+RUN apt-get update && apt-get install --yes curl openssh-client
 
 RUN mkdir /opt/downloads && cd /opt/downloads && \
     curl -o actions-runner-linux-x64-2.303.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.303.0/actions-runner-linux-x64-2.303.0.tar.gz && \
