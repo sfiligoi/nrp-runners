@@ -1,6 +1,6 @@
 FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
 
-RUN apt-get update && apt-get install --yes curl openssh-client
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --yes curl openssh-client make gcc gfortran gfortran python-is-python3 environment-modules 
 
 RUN mkdir /opt/downloads && cd /opt/downloads && \
     curl -o actions-runner-linux-x64-2.303.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.303.0/actions-runner-linux-x64-2.303.0.tar.gz && \

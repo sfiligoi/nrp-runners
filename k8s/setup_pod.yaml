@@ -9,10 +9,10 @@ spec:
         - weight: 1
           preference:
            matchExpressions:
-           - key: topology.kubernetes.io/region
+           - key: topology.kubernetes.io/zone
              operator: In
              values:
-             - us-central
+             - unl
       containers:
       - name: mypod
         image: sfiligoi/nrp-runners:wn-gpu
@@ -21,11 +21,11 @@ spec:
            limits:
              memory: 6Gi
              cpu: 2
-             ephemeral-storage: 11Gi
+             ephemeral-storage: 110Gi
            requests:
              memory: 1Gi
              cpu: 0.1
-             ephemeral-storage: 8Gi
+             ephemeral-storage: 80Gi
         command: ["sh", "-c", "mkdir /mnt/scratch/builder; chown -R builder /mnt/scratch/builder; sleep 10000"]
         volumeMounts:
         - name: scratch1
