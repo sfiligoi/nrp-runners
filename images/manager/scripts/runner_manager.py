@@ -23,7 +23,7 @@ def getruns(who,state,token):
         c.perform()
         c.close()
     except:
-        print("Failed to contact github")
+        print("%s Failed to contact github"%time.ctime(), flush=True)
         return None
 
     try:
@@ -36,11 +36,11 @@ def getruns(who,state,token):
     # if we got here, there was an error
     try:
         errmsg=doc['message']
-        print("Github error: %s"%errmsg)
+        print("%s Github error: %s"%(time.ctime(), errmsg), flush=True)
         return None
     except:
         # OK, I give up
-        print("Parsing error!")
+        print("%s GitHub Parsing error!"%time.ctime(), flush=True)
         return None
 
     return cnt
@@ -56,17 +56,17 @@ def getrunners(nmspace,repo):
         k8s = kubernetes.client.AppsV1Api()
         dlist = k8s.list_namespaced_deployment(namespace=nmspace,label_selector="runner-repo=%s"%repo)
     except:
-        print("Failed to contact k8s")
+        print("%s Failed to contact k8s"%time.ctime(), flush=True)
         return None
 
     try:
         if len(dlist.items)<1:
-           print("Cannot find deployment runner-repo=%s"%repo)
+           print("%s Cannot find deployment runner-repo=%s"%(time.ctime(),repo), flush=True)
            return None
         nm = dlist.items[0].metadata.name
         cnt = dlist.items[0].spec.replicas
     except:
-        print("Parsing error!")
+        print("%s K8S Parsing error!"%time.ctime(), flush=True)
         return None
 
     return (nmspace,nm,cnt)
@@ -76,7 +76,7 @@ def setrunners(nmspace, nm, cnt):
         k8s = kubernetes.client.AppsV1Api()
         k8s.patch_namespaced_deployment(namespace=nmspace,name=nm, body={'spec': {'replicas': cnt}})
     except:
-        print("Deployment update failed")
+        print("%s Deployment update failed"%time.ctime(), flush=True)
 
 # keep one runner alive only if there are any waiting runs
 # except for periodic intervals needed to keep the token alive
@@ -96,7 +96,7 @@ def checkandsetrunners(nmspace, who, repo, token, awake_period=250000, awake_len
     if awake_point<awake_length:
        if runner_cnt==0:
           # force one alive runniner during the awake period
-          print("%s Starting periodic runner %s"%(time.ctime(), repo))
+          print("%s Starting periodic runner %s"%(time.ctime(), repo), flush=True)
           setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 1)
        # else just make sure it stays that way
        return
@@ -110,14 +110,14 @@ def checkandsetrunners(nmspace, who, repo, token, awake_period=250000, awake_len
 
     if runner_cnt==0:
        if run_cnt>0:
-         print("%s Starting runner %s"%(time.ctime(), repo))
+         print("%s Starting runner %s"%(time.ctime(), repo), flush=True)
          setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 1)
     else:
        run_cnt2 = getactiveruns(who,token)
        if run_cnt2 is None:
           return
        if (run_cnt+run_cnt2)<1:
-         print("%s Stopping runner %s"%(time.ctime(), repo))
+         print("%s Stopping runner %s"%(time.ctime(), repo), flush=True)
          setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 0)
 
 def main(nmspace, who, repo, stime):
@@ -125,7 +125,7 @@ def main(nmspace, who, repo, stime):
     with open("/etc/github_token.txt","r") as fd:
         token=fd.readlines()[0].strip()
 
-    print("%s Manager args %s,%s,%s,%s"%(time.ctime(), nmspace, who, repo, stime))
+    print("%s Manager args %s,%s,%s,%s"%(time.ctime(), nmspace, who, repo, stime), flush=True)
     while True: #run forever
       checkandsetrunners(nmspace, who, repo, token)
       time.sleep(stime)
