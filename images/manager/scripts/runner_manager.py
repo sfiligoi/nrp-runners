@@ -30,7 +30,16 @@ def getruns(who,state,token):
         body = buffer.getvalue().decode('ascii')
         doc=json.loads(body)
         cnt=doc['total_count']
+        return cnt
     except:
+        pass
+    # if we got here, there was an error
+    try:
+        errmsg=doc['message']
+        print("Github error: %s"%errmsg)
+        return None
+    except:
+        # OK, I give up
         print("Parsing error!")
         return None
 
