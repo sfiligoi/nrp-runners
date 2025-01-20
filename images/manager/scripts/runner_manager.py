@@ -116,7 +116,7 @@ def checkandsetrunners(nmspace, who, repo, token, awake_period=250000, awake_len
            # if in the periodic setup, stop it, we likely don't need it
            print("%s Stopping periodic runner %s"%(time.ctime(), repo), flush=True)
            setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 0)
-           n_periodic=False
+           in_periodic=False
        # bail, keep the current status, there may be active runs in progress
        return
 
