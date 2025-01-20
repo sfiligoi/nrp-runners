@@ -85,6 +85,9 @@ in_periodic=False
 #  awake_period is the frequency with a default of 3 days (tokens are valid of a week)
 #  awak_length is the time to stay awak, default just over 33 mins to allow for binary updates
 def checkandsetrunners(nmspace, who, repo, token, awake_period=250000, awake_length=2000):
+    global my_start_time
+    global in_periodic
+
     # find how many runners we already have
     runner_cnt_arr = getrunners(nmspace,repo)
     if runner_cnt_arr is None:  # Error detected, just bail
