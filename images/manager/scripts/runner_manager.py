@@ -78,6 +78,8 @@ def setrunners(nmspace, nm, cnt):
     except:
         print("%s Deployment update failed"%time.ctime(), flush=True)
 
+in_periodic=False
+
 # keep one runner alive only if there are any waiting runs
 # except for periodic intervals needed to keep the token alive
 #  awake_period is the frequency with a default of 3 days (tokens are valid of a week)
@@ -98,6 +100,7 @@ def checkandsetrunners(nmspace, who, repo, token, awake_period=250000, awake_len
           # force one alive runniner during the awake period
           print("%s Starting periodic runner %s"%(time.ctime(), repo), flush=True)
           setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 1)
+          in_periodic=True
        # else just make sure it stays that way
        return
 
@@ -105,9 +108,16 @@ def checkandsetrunners(nmspace, who, repo, token, awake_period=250000, awake_len
 
     # find how many jobs are in neeed of a runner
     run_cnt = getqueuedruns(who,token)
-    if run_cnt is None: # Error detected, just bail
+    if run_cnt is None: # Error detected
+       if (in_periodic):
+           # if in the periodic setup, stop it, we likely don't need it
+           print("%s Stopping periodic runner %s"%(time.ctime(), repo), flush=True)
+           setrunners(runner_cnt_arr[0], runner_cnt_arr[1], 0)
+           n_periodic=False
+       # bail, keep the current status, there may be active runs in progress
        return
 
+    in_periodic=False
     if runner_cnt==0:
        if run_cnt>0:
          print("%s Starting runner %s"%(time.ctime(), repo), flush=True)
