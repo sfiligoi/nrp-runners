@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner-quick
+  labels:
+    k8s-app: runner-quick
+    runner-repo: quick
+    runner-type: linux-gpu-cuda
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      k8s-app: runner-quick
+  template:
+    metadata: 
+      labels:
+        k8s-app: runner-quick
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-A10
+      restartPolicy: Always
+      containers:
+      - name: mypod
+        image: sfiligoi/nrp-runners:wn-gpu
+        imagePullPolicy: Always
+        resources:
+           limits:
+             memory: 11Gi
+             cpu: 5
+             nvidia.com/gpu: 1
+             ephemeral-storage: 110Gi
+           requests:
+             memory: 8Gi
+             cpu: 3
+             ephemeral-storage: 80Gi
+             nvidia.com/gpu: 1
+        command: ["sh", "-c", "mkdir /mnt/scratch/builder; chown -R builder /mnt/scratch/builder; /opt/run_runner.sh /mnt/persistent/builder/QUICK"]
+        volumeMounts:
+        - name: scratch1
+          mountPath: /mnt/scratch
+        - name: mypvc
+          mountPath: /mnt/persistent
+      volumes:
+      - name: scratch1
+        emptyDir: {}
+      - name: mypvc
+        persistentVolumeClaim:
+          claimName: runner-state
